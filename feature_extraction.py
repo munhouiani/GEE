@@ -43,6 +43,7 @@ class FeatureExtractor:
         # udf functions of extraction methods
         self.extract_num_flow_udf = pandas_udf(self.extract_num_flow, 'double')
         self.mean_udf = pandas_udf(self.mean, 'double')
+        self.std_udf = pandas_udf(self.std, 'double')
 
     @staticmethod
     def extract_num_flow(grouped_data: pd.Series) -> float:
@@ -68,6 +69,18 @@ class FeatureExtractor:
 
         return grouped_data.mean()
 
+    @staticmethod
+    def std(grouped_data: pd.Series) -> float:
+        """
+        Extract standard deviation of a given pandas Series
+        :param grouped_data: grouped data
+        :type grouped_data: pd.Series
+        :return: standard deviation value
+        :rtype: float
+        """
+
+        return grouped_data.std()
+
     def extract_features(self) -> pyspark.sql.dataframe:
         df = (
             self.df
@@ -81,6 +94,11 @@ class FeatureExtractor:
                 self.mean_udf('num_of_bytes').alias('mean_num_of_bytes'),
                 self.mean_udf('packet_rate').alias('mean_packet_rate'),
                 self.mean_udf('byte_rate').alias('mean_byte_rate'),
+                self.std_udf('duration').alias('std_duration'),
+                self.std_udf('packet').alias('std_packet'),
+                self.std_udf('num_of_bytes').alias('std_num_of_bytes'),
+                self.std_udf('packet_rate').alias('std_packet_rate'),
+                self.std_udf('byte_rate').alias('std_byte_rate'),
             )
                 # filter out num_flow < 10
                 .filter((col('num_flow') >= 10))
