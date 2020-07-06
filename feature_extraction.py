@@ -3,6 +3,7 @@ import math
 import os
 import sys
 from collections import Counter
+from typing import Union
 
 import click
 import pandas as pd
@@ -50,6 +51,7 @@ class FeatureExtractor:
         self.std_udf = pandas_udf(self.std, 'double')
         self.entropy_udf = pandas_udf(self.entropy, 'double')
         self.port_proportion_udf = pandas_udf(self.port_proportion, 'array<double>')
+        self.build_label_udf = pandas_udf(self.build_label, 'string')
 
     @staticmethod
     def extract_num_flow(grouped_data: pd.Series) -> float:
@@ -160,6 +162,26 @@ class FeatureExtractor:
 
         return proportion
 
+    @staticmethod
+    def build_label(grouped_data: pd.Series) -> Union[str, None]:
+        """
+        Build label from a given pandas Series
+        :param grouped_data: grouped data
+        :type grouped_data: pd.Series
+        :return: label
+        :rtype: str, None
+        """
+
+        counter = Counter(grouped_data)
+        total = sum(counter.values())
+        half_total = 0.5 * total
+
+        for label, count in counter.items():
+            if count > half_total:
+                return label
+
+        return None
+
     def extract_features(self) -> pyspark.sql.dataframe:
         df = (
             self.df
@@ -185,6 +207,7 @@ class FeatureExtractor:
                 self.entropy_udf('flags').alias('entropy_flags'),
                 self.port_proportion_udf('src_port').alias('proportion_src_port'),
                 self.port_proportion_udf('dst_port').alias('proportion_dst_port'),
+                self.build_label_udf('label').alias('label'),
             )
                 # filter out num_flow < 10
                 .filter((col('num_flow') >= 10))
