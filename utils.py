@@ -1,6 +1,6 @@
 import pyspark.sql.dataframe
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_timestamp, col, from_unixtime, unix_timestamp
+from pyspark.sql.functions import col, from_unixtime, unix_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, LongType, DoubleType
 
 
@@ -40,7 +40,7 @@ def read_csv(spark: SparkSession, path: str) -> pyspark.sql.dataframe:
             .csv(path)
     )
 
-    # convert datatime column from string to unix_timestamp
+    # convert datetime column from string to unix_timestamp
     df = (
         df
             .withColumn('timestamp', unix_timestamp(col('timestamp'), 'yyyy-MM-dd HH:mm:ss'))
