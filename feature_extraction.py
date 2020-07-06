@@ -1,8 +1,10 @@
+import logging
 import math
 import os
 import sys
 from collections import Counter
 
+import click
 import pandas as pd
 import psutil
 import pyspark
@@ -197,7 +199,18 @@ class FeatureExtractor:
         return df
 
 
-def main():
+@click.command()
+@click.option('--train', help='path to the directory containing train csv files', required=True)
+@click.option('--test', help='path to the directory containing test csv files', required=True)
+@click.option('--target_train', help='path to the directory to persist train features files', required=True)
+@click.option('--target_test', help='path to the directory to persist test features files', required=True)
+def main(train: str, test: str, target_train: str, target_test: str):
+    # initialise logger
+    logger = logging.getLogger(__file__)
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel('INFO')
+
+    logger.info('Initialising local spark')
     # initialise local spark
     os.environ['PYSPARK_PYTHON'] = sys.executable
     os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
@@ -210,15 +223,48 @@ def main():
             .config('spark.driver.host', '127.0.0.1')
             .getOrCreate()
     )
-    # read csv
-    df_train = read_csv(spark=spark, path='data/train')
 
+    # processing train
+    logger.info('Processing train csv files')
+    logger.info('Read csv')
+    # read csv
+    df_train = read_csv(spark=spark, path=train)
+
+    logger.info('Extracting features...')
     # extraction
     df_train_extractor = FeatureExtractor(spark=spark, df=df_train)
     df_train_feature = df_train_extractor.extract_features()
 
-    # preview
-    df_train_feature.show(5)
+    logger.info('Persisting...')
+    # persist
+    (
+        df_train_feature
+            .write
+            .mode('overwrite')
+            .parquet(target_train)
+    )
+    logger.info('Train csv extraction done')
+
+    # processing test
+    logger.info('Processing test csv files')
+    logger.info('Read csv')
+    # read csv
+    df_test = read_csv(spark=spark, path=test)
+
+    logger.info('Extracting features...')
+    # extraction
+    df_test_extractor = FeatureExtractor(spark=spark, df=df_test)
+    df_test_feature = df_test_extractor.extract_features()
+
+    logger.info('Persisting...')
+    # persist
+    (
+        df_test_feature
+            .write
+            .mode('overwrite')
+            .parquet(target_test)
+    )
+    logger.info('Test csv extraction done')
 
 
 if __name__ == '__main__':
