@@ -47,6 +47,7 @@ class FeatureExtractor:
         self.mean_udf = pandas_udf(self.mean, 'double')
         self.std_udf = pandas_udf(self.std, 'double')
         self.entropy_udf = pandas_udf(self.entropy, 'double')
+        self.port_proportion_udf = pandas_udf(self.port_proportion, 'array<double>')
 
     @staticmethod
     def extract_num_flow(grouped_data: pd.Series) -> float:
@@ -107,6 +108,56 @@ class FeatureExtractor:
 
         return ent
 
+    @staticmethod
+    def port_proportion(grouped_data: pd.Series) -> list:
+        """
+        Extract port proportion of a given pandas Series
+        :param grouped_data: grouped data
+        :type grouped_data: pd.Series
+        :return: standard deviation value
+        :rtype: list of float
+        """
+
+        common_port = {
+            20: 0,  # FTP
+            21: 1,  # FTP
+            22: 2,  # SSH
+            23: 3,  # Telnet
+            25: 4,  # SMTP
+            50: 5,  # IPSec
+            51: 6,  # IPSec
+            53: 7,  # DNS
+            67: 8,  # DHCP
+            68: 9,  # DHCP
+            69: 10,  # TFTP
+            80: 11,  # HTTP
+            110: 12,  # POP3
+            119: 13,  # NNTP
+            123: 14,  # NTP
+            135: 15,  # RPC
+            136: 16,  # NetBios
+            137: 17,  # NetBios
+            138: 18,  # NetBios
+            139: 19,  # NetBios
+            143: 20,  # IMAP
+            161: 21,  # SNMP
+            162: 22,  # SNMP
+            389: 23,  # LDAP
+            443: 24,  # HTTPS
+            3389: 25,  # RDP
+        }
+
+        proportion = [0.0] * (len(common_port) + 1)
+        for port in grouped_data:
+            idx = common_port.get(port)
+            if idx is None:
+                idx = -1
+            proportion[idx] += 1
+
+        proportion = [x / sum(proportion) for x in proportion]
+
+        return proportion
+
     def extract_features(self) -> pyspark.sql.dataframe:
         df = (
             self.df
@@ -130,6 +181,8 @@ class FeatureExtractor:
                 self.entropy_udf('src_port').alias('entropy_src_port'),
                 self.entropy_udf('dst_port').alias('entropy_dst_port'),
                 self.entropy_udf('flags').alias('entropy_flags'),
+                self.port_proportion_udf('src_port').alias('proportion_src_port'),
+                self.port_proportion_udf('dst_port').alias('proportion_dst_port'),
             )
                 # filter out num_flow < 10
                 .filter((col('num_flow') >= 10))
