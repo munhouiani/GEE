@@ -1,5 +1,7 @@
+import math
 import os
 import sys
+from collections import Counter
 
 import pandas as pd
 import psutil
@@ -44,6 +46,7 @@ class FeatureExtractor:
         self.extract_num_flow_udf = pandas_udf(self.extract_num_flow, 'double')
         self.mean_udf = pandas_udf(self.mean, 'double')
         self.std_udf = pandas_udf(self.std, 'double')
+        self.entropy_udf = pandas_udf(self.entropy, 'double')
 
     @staticmethod
     def extract_num_flow(grouped_data: pd.Series) -> float:
@@ -81,6 +84,29 @@ class FeatureExtractor:
 
         return grouped_data.std()
 
+    @staticmethod
+    def entropy(grouped_data: pd.Series) -> float:
+        """
+        Extract shannon entropy of a given pandas Series
+        :param grouped_data: grouped data
+        :type grouped_data: pd.Series
+        :return: entropy
+        :rtype: float
+        """
+
+        ent = 0.0
+        if len(grouped_data) <= 1:
+            return ent
+
+        counter = Counter(grouped_data)
+        probs = [c / len(grouped_data) for c in counter.values()]
+
+        for p in probs:
+            if p > 0.0:
+                ent -= p * math.log2(p)
+
+        return ent
+
     def extract_features(self) -> pyspark.sql.dataframe:
         df = (
             self.df
@@ -99,6 +125,11 @@ class FeatureExtractor:
                 self.std_udf('num_of_bytes').alias('std_num_of_bytes'),
                 self.std_udf('packet_rate').alias('std_packet_rate'),
                 self.std_udf('byte_rate').alias('std_byte_rate'),
+                self.entropy_udf('protocol').alias('entropy_protocol'),
+                self.entropy_udf('dst_ip').alias('entropy_dst_ip'),
+                self.entropy_udf('src_port').alias('entropy_src_port'),
+                self.entropy_udf('dst_port').alias('entropy_dst_port'),
+                self.entropy_udf('flags').alias('entropy_flags'),
             )
                 # filter out num_flow < 10
                 .filter((col('num_flow') >= 10))
