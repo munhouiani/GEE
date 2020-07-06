@@ -1,5 +1,6 @@
 import pyspark.sql.dataframe
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import to_timestamp, col, from_unixtime, unix_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, LongType, DoubleType
 
 
@@ -37,6 +38,32 @@ def read_csv(spark: SparkSession, path: str) -> pyspark.sql.dataframe:
             .read
             .schema(schema)
             .csv(path)
+    )
+
+    # convert datatime column from string to unix_timestamp
+    df = (
+        df
+            .withColumn('timestamp', unix_timestamp(col('timestamp'), 'yyyy-MM-dd HH:mm:ss'))
+    )
+
+    return df
+
+
+def patch_time_windows(df: pyspark.sql.dataframe, window_seconds: int):
+    """
+    Generate time window by
+    :param df: pyspark dataframe
+    :param window_seconds: window size in second
+    :type df: pyspark.sql.dataframe
+    :type window_seconds: int
+    :return: df
+    :rtype: pyspark.sql.dataframe
+    """
+    time_window = from_unixtime(col('timestamp') - col('timestamp') % window_seconds)
+
+    df = (
+        df
+            .withColumn('time_window', time_window)
     )
 
     return df
