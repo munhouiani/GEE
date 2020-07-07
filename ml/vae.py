@@ -26,6 +26,13 @@ class VAE(pl.LightningModule):
 
         return BCE + KLD
 
+    def training_step(self, batch, batch_idx):
+        x = batch['features']
+        recon_x, mu, logvar = self(x)
+        loss = self.loss_function(recon_x, x, mu, logvar)
+
+        return {'loss': loss}
+
 
 class Encoder(pl.LightningModule):
     def __init__(self):
