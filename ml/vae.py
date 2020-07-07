@@ -58,6 +58,9 @@ class Encoder(pl.LightningModule):
         h = self.fc(x)
         return self.mu(h), self.logvar(h)
 
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=0.001, weight_decay=0.01)
+
 
 class Decoder(pl.LightningModule):
     def __init__(self):
