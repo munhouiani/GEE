@@ -1,5 +1,6 @@
 import pytorch_lightning as pl
 import torch
+import torch.nn.functional as F
 from torch import nn
 
 
@@ -18,6 +19,12 @@ class VAE(pl.LightningModule):
         mu, logvar = self.encoder(x)
         z = self.reparameterise(mu, logvar)
         return self.decode(z), mu, logvar
+
+    def loss_function(self, recon_x, x, mu, logvar):
+        BCE = F.binary_cross_entropy(recon_x, x.view(-1, 59), reduction='sum')
+        KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+        return BCE + KLD
 
 
 class Encoder(pl.LightningModule):
