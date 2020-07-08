@@ -21,7 +21,7 @@ class VAE(pl.LightningModule):
         return self.decode(z), mu, logvar
 
     def loss_function(self, recon_x, x, mu, logvar):
-        BCE = F.binary_cross_entropy(recon_x, x.view(-1, 59), reduction='sum')
+        BCE = F.binary_cross_entropy(recon_x, x.view(-1, 69), reduction='sum')
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
         return BCE + KLD
@@ -40,7 +40,7 @@ class Encoder(pl.LightningModule):
         self.fc = nn.Sequential(
             # layer 1
             nn.Linear(
-                in_features=59,
+                in_features=69,
                 out_features=512
             ),
             nn.ReLU(),
@@ -101,7 +101,7 @@ class Decoder(pl.LightningModule):
             # output
             nn.Linear(
                 in_features=512,
-                out_features=59
+                out_features=69
             ),
             nn.Sigmoid(),
         )
