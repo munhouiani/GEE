@@ -1,8 +1,10 @@
 import os
 import sys
 
+import numpy as np
 import psutil
 import pyspark.sql.dataframe
+from petastorm.unischema import Unischema, dict_to_spark_row
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_unixtime, unix_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, LongType, DoubleType
@@ -115,3 +117,29 @@ def normalise(x: float, min_val: float, max_val: float) -> float:
         norm_x = 1.0
 
     return norm_x
+
+
+def row_generator(x):
+    time_window, src_ip, feature, label = x
+    return {
+        'time_window': time_window,
+        'src_ip': src_ip,
+        'feature': np.expand_dims(np.array(feature, dtype=np.float32), axis=0),
+        'label': label,
+    }
+
+
+def change_df_schema(spark: SparkSession, schema: Unischema, df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    rows_rdd = (
+        df
+            .rdd
+            .map(row_generator)
+            .map(lambda x: dict_to_spark_row(schema, x))
+    )
+
+    df = spark.createDataFrame(
+        rows_rdd,
+        schema.as_spark_schema()
+    )
+
+    return df
