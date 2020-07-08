@@ -18,7 +18,7 @@ class VAE(pl.LightningModule):
     def forward(self, x):
         mu, logvar = self.encoder(x)
         z = self.reparameterise(mu, logvar)
-        return self.decode(z), mu, logvar
+        return self.decoder(z), mu, logvar
 
     def loss_function(self, recon_x, x, mu, logvar):
         BCE = F.binary_cross_entropy(recon_x, x.view(-1, 69), reduction='sum')
@@ -27,7 +27,7 @@ class VAE(pl.LightningModule):
         return BCE + KLD
 
     def training_step(self, batch, batch_idx):
-        x = batch['features']
+        x = batch['feature']
         recon_x, mu, logvar = self(x)
         loss = self.loss_function(recon_x, x, mu, logvar)
 
