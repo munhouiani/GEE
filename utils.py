@@ -7,6 +7,24 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_unixtime, unix_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, LongType, DoubleType
 
+feature_min_max = {
+    'mean_duration': (0.0, 2042.86),
+    'mean_packet': (1.0, 109214.27272727272),
+    'mean_num_of_bytes': (28.0, 163795638.0909091),
+    'mean_packet_rate': (0.0, 17224.14377310265),
+    'mean_byte_rate': (0.0, 13902452.340182647),
+    'std_duration': (0.0, 562.7625560888366),
+    'std_packet': (0.0, 370614.95468242496),
+    'std_num_of_bytes': (0.0, 543247494.7844237),
+    'std_packet_rate': (0.0, 15783.66319664221),
+    'std_byte_rate': (0.0, 16441139.793386225),
+    'entropy_protocol': (0.0, 2.260220915066596),
+    'entropy_dst_ip': (0.0, 13.787687869067254),
+    'entropy_src_port': (0.0, 14.206227931544092),
+    'entropy_dst_port': (0.0, 14.027301292191831),
+    'entropy_flags': (0.0, 4.631615665225586)
+}
+
 
 def read_csv(spark: SparkSession, path: str) -> pyspark.sql.dataframe:
     """
