@@ -1,9 +1,11 @@
 import os
 import sys
+from pathlib import Path
 
 import numpy as np
 import psutil
 import pyspark.sql.dataframe
+from petastorm.etl.dataset_metadata import materialize_dataset
 from petastorm.unischema import Unischema, dict_to_spark_row
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_unixtime, unix_timestamp
@@ -143,3 +145,15 @@ def change_df_schema(spark: SparkSession, schema: Unischema, df: pyspark.sql.Dat
     )
 
     return df
+
+
+def save_parquet_for_petastorm_parquet(spark: SparkSession, df: pyspark.sql.DataFrame, output_path: str,
+                                       schema: Unischema):
+    output_path = Path(output_path).absolute().as_uri()
+    with materialize_dataset(spark, output_path, schema, row_group_size_mb=256):
+        (
+            df
+                .write
+                .mode('overwrite')
+                .parquet(output_path)
+        )
