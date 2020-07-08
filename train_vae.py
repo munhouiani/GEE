@@ -32,7 +32,7 @@ def main(data_path: str, model_path: str, gpu: bool):
     reader = make_reader(
         Path(data_path).absolute().as_uri(), schema_fields=['feature'], reader_pool_type='process',
         workers_count=num_cores, pyarrow_serialize=True, shuffle_row_groups=True, shuffle_row_drop_partitions=2,
-        num_epochs=50
+        num_epochs=1
     )
     dataloader = DataLoader(reader, batch_size=300, shuffling_queue_capacity=4096)
 
@@ -42,7 +42,7 @@ def main(data_path: str, model_path: str, gpu: bool):
 
     logger.info('Start Training...')
     # train
-    trainer = Trainer(val_check_interval=100, max_epochs=1, gpus=gpu)
+    trainer = Trainer(val_check_interval=100, max_epochs=50, gpus=gpu)
     trainer.fit(model, dataloader)
 
     logger.info('Persisting...')
