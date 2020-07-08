@@ -166,7 +166,7 @@ def main(train: str, test: str, target_train: str, target_test: str):
     test_feature_df = spark.read.parquet(test)
 
     logger.info('Composing features...')
-    test_input = FeatureComposer(spark, test_feature_df).transform(remove_malicious=True)
+    test_input = FeatureComposer(spark, test_feature_df).transform(remove_malicious=False)
 
     logger.info('Changing schema...')
     test_input = change_df_schema(spark, schema, test_input)
