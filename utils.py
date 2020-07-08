@@ -105,3 +105,13 @@ def init_local_spark():
             .getOrCreate()
     )
     return spark
+
+
+def normalise(x: float, min_val: float, max_val: float) -> float:
+    norm_x = (x - min_val) / (max_val - min_val)
+    if norm_x < 0:
+        norm_x = 0.0
+    elif norm_x > 1.0:
+        norm_x = 1.0
+
+    return norm_x
