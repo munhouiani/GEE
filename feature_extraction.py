@@ -1,19 +1,16 @@
 import logging
 import math
-import os
-import sys
 from collections import Counter
 from typing import Union
 
 import click
 import pandas as pd
-import psutil
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit, col
 from pyspark.sql.pandas.functions import pandas_udf
 
-from utils import read_csv, patch_time_windows
+from utils import read_csv, patch_time_windows, init_local_spark
 
 """
 Feature Extraction Class
@@ -234,18 +231,7 @@ def main(train: str, test: str, target_train: str, target_test: str):
     logger.setLevel('INFO')
 
     logger.info('Initialising local spark')
-    # initialise local spark
-    os.environ['PYSPARK_PYTHON'] = sys.executable
-    os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
-    memory_gb = psutil.virtual_memory().available // 1024 // 1024 // 1024
-    spark = (
-        SparkSession
-            .builder
-            .master('local[*]')
-            .config('spark.driver.memory', f'{memory_gb}g')
-            .config('spark.driver.host', '127.0.0.1')
-            .getOrCreate()
-    )
+    spark = init_local_spark()
 
     # processing train
     logger.info('Processing train csv files')

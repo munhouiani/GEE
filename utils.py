@@ -1,3 +1,7 @@
+import os
+import sys
+
+import psutil
 import pyspark.sql.dataframe
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_unixtime, unix_timestamp
@@ -67,3 +71,19 @@ def patch_time_windows(df: pyspark.sql.dataframe, window_seconds: int):
     )
 
     return df
+
+
+def init_local_spark():
+    # initialise local spark
+    os.environ['PYSPARK_PYTHON'] = sys.executable
+    os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
+    memory_gb = psutil.virtual_memory().available // 1024 // 1024 // 1024
+    spark = (
+        SparkSession
+            .builder
+            .master('local[*]')
+            .config('spark.driver.memory', f'{memory_gb}g')
+            .config('spark.driver.host', '127.0.0.1')
+            .getOrCreate()
+    )
+    return spark
