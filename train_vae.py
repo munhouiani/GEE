@@ -30,8 +30,9 @@ def main(data_path: str, model_path: str, gpu: bool):
     num_cores = psutil.cpu_count(logical=True)
     # load data loader
     reader = make_reader(
-        Path(data_path).absolute().as_uri(), reader_pool_type='process', workers_count=num_cores,
-        pyarrow_serialize=True, shuffle_row_groups=True, shuffle_row_drop_partitions=2, num_epochs=50
+        Path(data_path).absolute().as_uri(), schema_fields=['feature'], reader_pool_type='process',
+        workers_count=num_cores, pyarrow_serialize=True, shuffle_row_groups=True, shuffle_row_drop_partitions=2,
+        num_epochs=50
     )
     dataloader = DataLoader(reader, batch_size=300, shuffling_queue_capacity=4096)
 
