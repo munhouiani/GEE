@@ -99,14 +99,15 @@ class FeatureComposer:
 
         return feature_arr
 
-    def transform(self, remove_malicious=True) -> pyspark.sql.DataFrame:
+    def transform(self, remove_malicious=True, remove_null_label=True) -> pyspark.sql.DataFrame:
         df = (
             self.df
                 # compose feature
                 .withColumn('features', self.feature_compose_udf(*self.feature_column))
-                # filter NA label
-                .filter(col('label').isNotNull())
         )
+
+        if remove_null_label:
+            df = df.filter(col('label').isNotNull())
 
         if remove_malicious:
             df = df.filter(col('label') == 'background')
@@ -140,7 +141,7 @@ def main(train: str, test: str, target_train: str, target_test: str):
             UnischemaField('time_window', np.str, (), ScalarCodec(StringType()), False),
             UnischemaField('src_ip', np.str, (), ScalarCodec(StringType()), False),
             UnischemaField('feature', np.float32, (1, 69), CompressedNdarrayCodec(), False),
-            UnischemaField('label', np.str, (), ScalarCodec(StringType()), False),
+            UnischemaField('label', np.str, (), ScalarCodec(StringType()), True),
         ]
     )
 
@@ -150,7 +151,7 @@ def main(train: str, test: str, target_train: str, target_test: str):
     train_feature_df = spark.read.parquet(train)
 
     logger.info('Composing features...')
-    train_input = FeatureComposer(spark, train_feature_df).transform(remove_malicious=True)
+    train_input = FeatureComposer(spark, train_feature_df).transform(remove_malicious=True, remove_null_label=True)
 
     logger.info('Changing schema...')
     train_input = change_df_schema(spark, schema, train_input)
@@ -166,7 +167,7 @@ def main(train: str, test: str, target_train: str, target_test: str):
     test_feature_df = spark.read.parquet(test)
 
     logger.info('Composing features...')
-    test_input = FeatureComposer(spark, test_feature_df).transform(remove_malicious=False)
+    test_input = FeatureComposer(spark, test_feature_df).transform(remove_malicious=False, remove_null_label=True)
 
     logger.info('Changing schema...')
     test_input = change_df_schema(spark, schema, test_input)
