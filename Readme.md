@@ -1,5 +1,7 @@
 # GEE: A Gradient-based Explainable Variational Autoencoder for Network Anomaly Detection
 
+Details in blog post: https://blog.munhou.com/2020/07/12/Pytorch-Implementation-of-GEE-A-Gradient-based-Explainable-Variational-Autoencoder-for-Network-Anomaly-Detection/
+
 ## How to Use
 
 ### Install Dependencies
