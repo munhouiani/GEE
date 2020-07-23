@@ -24,7 +24,7 @@ Download the processed data [here](https://drive.google.com/file/d/1I2x2l__TKcpg
    tar -xvf march_week3_csv.tar.gz
    tar -xvf july_week5_csv.tar.gz
    ```
-3. Separate files by data.
+3. Separate files by date.
    ```
    grep '^2016-03-18' march.week3.csv.uniqblacklistremoved >> 20160318.csv
    grep '^2016-03-19' march.week3.csv.uniqblacklistremoved >> 20160319.csv
