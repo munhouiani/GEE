@@ -32,7 +32,7 @@ Download the processed data [here](https://drive.google.com/file/d/1I2x2l__TKcpg
    grep '^2016-07-30' july.week5.csv.uniqblacklistremoved >> 20160730.csv
    grep '^2016-07-31' july.week5.csv.uniqblacklistremoved >> 20160731.csv
    ```
-4. Put `20160319.csv` and `20160730.csv` to `data/train folder`, `20160318.csv`, `20160320.csv`, and `20160731.csv` to `data/test` folder.
+4. Put `20160319.csv` and `20160730.csv` to `data/train` folder, `20160318.csv`, `20160320.csv`, and `20160731.csv` to `data/test` folder.
 5. Perform feature extraction.
    ```
    python feature_extraction.py --train data/train --test data/test --target_train feature/train.feature.parquet --target_test feature/test.feature.parquet
