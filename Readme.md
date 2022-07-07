@@ -16,7 +16,7 @@ pip install petastorm==0.9.2
 ```
 
 ### Feature Extraction
-Download the processed data [here](https://drive.google.com/file/d/1I2x2l__TKcpg7nhcIkfsEFE6LZrodH9H/view?usp=sharing) or perform all the following steps.
+Download the processed data [here](https://drive.google.com/file/d/1pmOhZ3S2v7Fn-uEgI9BuSk9Zj-uxUaFg/view?usp=sharing) or perform all the following steps.
 
 1. Download raw data [march_week3_csv.tar.gz](https://nesg.ugr.es/nesg-ugr16/download/normal/march/week3/march_week3_csv.tar.gz) and [july_week5_csv.tar.gz](https://nesg.ugr.es/nesg-ugr16/download/attack/july/week5/july_week5_csv.tar.gz).
 2. Decompress files.
@@ -39,14 +39,14 @@ Download the processed data [here](https://drive.google.com/file/d/1I2x2l__TKcpg
    ```
 
 ### Normalise and Prepare Input Data for Model
-Download the processed data [here](https://drive.google.com/file/d/1nl-FJpI_KDjPUQn-xHj5Sjbq0kYic0eC/view?usp=sharing) or perform all the following steps.
+Download the processed data [here](https://drive.google.com/file/d/1ANCgjnnKaBiFwteeIdO0cF-_020jxfl2/view?usp=sharing) or perform all the following steps.
 
 ```
 python build_model_input.py --train feature/train.feature.parquet --test feature/test.feature.parquet --target_train model_input/train.model_input.parquet --target_test model_input/test.model_input.parquet
 ```
 
 ### Train Model
-Download pre-trained model [here](https://drive.google.com/file/d/17dMRZEbvPed2-WKuHDJwGZXP72hrM5yt/view?usp=sharing) or perform all the following steps.
+Download pre-trained model [here](https://drive.google.com/file/d/118WX53iZQiTgM-qREd7EYhIH0SJaQzfX/view?usp=sharing) or perform all the following steps.
 
 ```
 python train_vae.py --data_path model_input/train.model_input.parquet --model_path model/vae.model --gpu True
